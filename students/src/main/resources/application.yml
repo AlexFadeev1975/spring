@@ -1,0 +1,3 @@
+spring:
+  load_from_file:
+    ${LOAD_FROM_FILE:true}
