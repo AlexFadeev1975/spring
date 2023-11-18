@@ -1,0 +1,43 @@
+version: '3'
+services:
+  pgsql:
+    image: 'postgres:latest'
+    volumes:
+      - 'pgsql:/var/lib/postgresql/data'
+    ports:
+      - '5432:5432'
+    expose:
+      - '5432'
+    environment:
+      POSTGRES_DB: User
+      POSTGRES_USER: User
+      POSTGRES_PASSWORD: 123
+      TZ: Europe/Moscow
+    networks:
+      - server
+
+  mycontacts:
+    image: 'mycontacts'
+    ports:
+      - '8080:8080'
+    expose:
+      - '8080'
+    environment:
+      DB_HOST: pgsql
+      DB_PORT: 5432
+      DB_NAME: User
+      DB_PASSWORD: 123
+      DB_USER: User
+
+    depends_on:
+      - pgsql
+
+    networks:
+      - server
+networks:
+  server:
+    driver: bridge
+volumes:
+  pgsql:
+    driver: local
+
