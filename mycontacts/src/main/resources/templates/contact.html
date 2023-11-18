@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Contact</title>
+</head>
+<body>
+<h2> Контакт </h2>
+<form th:action="${contactDto.action} == 'update' ? @{/contacts/update} : @{/contacts/create} "
+      th:object="${contactDto}" th:method="post">
+
+    <label for="firstName">Enter firstName</label>
+    <input type="text" th:field="*{firstName}" id="firstName" th:placeholder="${contactDto.firstName}">
+    <span th:if="${contactDto.fnError}" th:text="${contactDto.errorMessage}"></span>
+    <br/>
+    <label for="lastName">Enter lastName</label>
+    <input type="text" th:field="*{lastName}" id="lastName" th:placeholder="${contactDto.lastName}">
+    <span th:if="${contactDto.lnError}" th:text="${contactDto.errorMessage}"></span>
+    <br/>
+    <label for="email">Enter email</label>
+    <input type="text" th:field="*{email}" id="email" th:placeholder="${contactDto.email}">
+    <span th:if="${contactDto.emError}" th:text="${contactDto.errorMessage}"></span>
+    <br/>
+    <label for="phone">Enter phone</label>
+    <input type="text" th:field="*{phone}" id="phone" th:placeholder="${contactDto.phone}">
+    <span th:if="${contactDto.phError}" th:text="${contactDto.errorMessage}">Введите 11 номер без пробелов</span>
+    <br/>
+    <input type="hidden" th:field="*{id}" id="id" placeholder="${contactDto.id}">
+
+    <input type="submit" value="Submit">
+</form>
+
+</body>
+</html>
