@@ -32,9 +32,10 @@ public class ApprovingBeforeOperation {
         assert requestAttributes != null;
         HttpServletRequest request = ((ServletRequestAttributes) requestAttributes).getRequest();
 
-        String userId = request.getHeader("userId");
+        Long userId = Long.parseLong(request.getHeader("userId"));
+        News news = newsRepository.findById(Long.valueOf(dto.getId())).orElseThrow();
 
-        if (!userId.equals(dto.getUserId())) throw new NotAccessException("Доступ к операции запрещен");
+        if (!userId.equals(news.getUserId())) throw new NotAccessException("Доступ к операции запрещен");
     }
 
     @Before("execution(* org.example.services.CommentService.update(..)) && args(dto)")
@@ -44,13 +45,14 @@ public class ApprovingBeforeOperation {
         assert requestAttributes != null;
         HttpServletRequest request = ((ServletRequestAttributes) requestAttributes).getRequest();
 
-        String userId = request.getHeader("userId");
+        Long userId = Long.parseLong(request.getHeader("userId"));
+        Comment comment = commentRepository.findById(Long.valueOf(dto.getId())).orElseThrow();
 
-        if (!userId.equals(dto.getUserId())) throw new NotAccessException("Доступ к операции запрещен");
+        if (!userId.equals(comment.getUserId())) throw new NotAccessException("Доступ к операции запрещен");
     }
 
-    @Before("execution(* org.example.services.NewsService.delete(..)) && args(newsId)")
-    public void doCheckBeforeDeleteNews(String newsId) {
+    @Before("execution(* org.example.services.NewsService.delete(..)) && args(id)")
+    public void doCheckBeforeDeleteNews(Long id) {
 
         RequestAttributes requestAttributes = RequestContextHolder.getRequestAttributes();
         assert requestAttributes != null;
@@ -58,14 +60,14 @@ public class ApprovingBeforeOperation {
 
         String userId = request.getHeader("userId");
 
-        News news = newsRepository.findById(Long.parseLong(newsId)).orElseThrow();
+        News news = newsRepository.findById(id).orElseThrow();
 
         if (!userId.equals(String.valueOf(news.getUserId())))
             throw new NotAccessException("Доступ к операции запрещен");
     }
 
     @Before("execution(* org.example.services.CommentService.delete(..)) && args(commentId)")
-    public void doCheckBeforeDeleteComment(String commentId) {
+    public void doCheckBeforeDeleteComment(Long commentId) {
 
         RequestAttributes requestAttributes = RequestContextHolder.getRequestAttributes();
         assert requestAttributes != null;
@@ -73,7 +75,7 @@ public class ApprovingBeforeOperation {
 
         String userId = request.getHeader("userId");
 
-        Comment comment = commentRepository.findById(Long.parseLong(commentId)).orElseThrow();
+        Comment comment = commentRepository.findById(commentId).orElseThrow();
 
         if (!userId.equals(String.valueOf(comment.getUserId())))
             throw new NotAccessException("Доступ к операции запрещен");

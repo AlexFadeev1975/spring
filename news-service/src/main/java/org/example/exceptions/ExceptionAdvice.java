@@ -58,4 +58,12 @@ public class ExceptionAdvice {
         return ResponseEntity.ok(response);
     }
 
+    @ExceptionHandler(IllegalArgumentException.class)
+    public ResponseEntity<ExceptionResponse> handleIAE() {
+
+        ExceptionResponse response = new ExceptionResponse("Неверный формат данных");
+
+        return ResponseEntity.ok(response);
+    }
+
 }

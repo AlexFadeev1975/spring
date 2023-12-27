@@ -21,16 +21,16 @@ public class CommentController {
     private final CommentService commentService;
 
     @PostMapping("/create/{news_id}")
-    public CommentDto create(@PathVariable("news_id") String newsId,
+    public CommentDto create(@PathVariable("news_id") Long newsId,
                              @RequestBody @Valid CommentDto dto,
                              HttpServletRequest request) {
-        String userId = request.getHeader("userId");
+        Long userId = Long.valueOf(request.getHeader("userId"));
 
         return commentService.create(dto, newsId, userId);
     }
 
     @GetMapping("/list/{news_id}")
-    public List<Comment> getComments(@PathVariable("news_id") String newsId) {
+    public List<Comment> getComments(@PathVariable("news_id") Long newsId) {
 
         return commentService.findAll(newsId);
     }
@@ -41,11 +41,11 @@ public class CommentController {
         return commentService.approvedUpdate(dto);
     }
 
-    @DeleteMapping("/delete/{comment_id}")
-    public ResponseEntity<?> deleteComment(@PathVariable("comment_id") String commentId) {
+    @DeleteMapping("/delete/{commentId}")
+    public ResponseEntity<?> deleteComment(@PathVariable("commentId") Long commentId) {
 
-        commentService.delete(commentId);
 
-        return ResponseEntity.ok("Comment успешно удален");
+        return (commentService.delete(commentId)) ? ResponseEntity.ok("Comment успешно удален")
+                : (ResponseEntity<?>) ResponseEntity.notFound();
     }
 }

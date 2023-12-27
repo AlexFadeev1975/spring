@@ -1,13 +1,13 @@
 package org.example.dto;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 import org.example.model.Category;
-import org.example.model.Comment;
-import org.hibernate.annotations.Comments;
 
 import java.time.LocalDateTime;
-import java.util.List;
 
 @Getter
 @Setter

@@ -21,54 +21,55 @@ public class NewsService {
     private final CategoryService categoryService;
     private final NewsRepository newsRepository;
 
+    private final NewsMapper mapper;
+
     @Transactional
-    public NewsDto create (NewsDto dto, String userId) {
+    public NewsDto create(NewsDto dto, Long userId) {
 
         dto.setCreatedTime(LocalDateTime.now());
-       dto.setUpdatedTime(LocalDateTime.now());
+        dto.setUpdatedTime(LocalDateTime.now());
 
-       dto.setCategory(categoryService.findByCategoryName(dto.getCategoryName()));
+        dto.setCategory(categoryService.findByCategoryName(dto.getCategoryName()));
 
-        dto.setUserId(userId);
+        dto.setUserId(userId.toString());
 
-        return NewsMapper.INSTANCE.newsToNewsDto(newsRepository.save(NewsMapper.INSTANCE.newsDtoToNews(dto)));
-
+        return mapper.newsToNewsDto(newsRepository.save(mapper.newsDtoToNews(dto)));
 
 
     }
 
-    public List<NewsDtoComCount> findAll (Pageable pageable) {
+    public List<NewsDtoComCount> findAll(Pageable pageable) {
 
-        Page<News> news =  newsRepository.findAll(pageable);
+        Page<News> news = newsRepository.findAll(pageable);
 
         List<News> newsList = news.getContent();
-        return newsList.stream().map(NewsMapper.INSTANCE::newsToNewsDtoComCount).toList();
+        return newsList.stream().map(mapper::newsToNewsDtoComCount).toList();
 
     }
 
-    public NewsDto update (NewsDto dto) {
+    public NewsDto update(NewsDto dto) {
 
         News news = newsRepository.findById(Long.parseLong(dto.getId())).orElseThrow();
 
         news.setUpdatedTime(LocalDateTime.now());
         news.setText(dto.getText());
         news.setCategory(categoryService.findByCategoryName(dto.getCategoryName()));
-        newsRepository.save(news);
 
-        return NewsMapper.INSTANCE.newsToNewsDto(news);
+
+        return mapper.newsToNewsDto(newsRepository.save(news));
     }
 
-    public void delete (String newsId) {
+    public void delete(Long id) {
 
-        News news = newsRepository.findById(Long.parseLong(newsId)).orElseThrow();
+        News news = newsRepository.findById(id).orElseThrow();
         newsRepository.delete(news);
     }
 
-    public NewsDto getNews (String newsId) {
+    public NewsDto getNews(Long newsId) {
 
-        News news = newsRepository.findById(Long.parseLong(newsId)).orElseThrow();
+        News news = newsRepository.findById(newsId).orElseThrow();
 
-        return NewsMapper.INSTANCE.newsToNewsDto(news);
+        return mapper.newsToNewsDto(news);
     }
 
 }

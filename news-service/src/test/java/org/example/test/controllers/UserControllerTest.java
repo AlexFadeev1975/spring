@@ -1,115 +1,160 @@
 package org.example.test.controllers;
 
-import org.assertj.core.api.WithAssertions;
+import io.restassured.http.ContentType;
+import jakarta.validation.constraints.Negative;
 import org.example.dto.UserDto;
-import org.example.mappers.NewsMapper;
 import org.example.model.User;
 import org.example.repository.UserRepository;
-import org.example.services.UserService;
 import org.junit.jupiter.api.Test;
-import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.http.MediaType;
-import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
-
-import java.util.ArrayList;
-import java.util.List;
-
-import static org.mockito.Mockito.*;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
-import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import org.springframework.beans.factory.annotation.Autowired;
 
 
-public class UserControllerTest extends AbstractControllerTest implements WithAssertions {
+import static io.restassured.RestAssured.given;
+import static io.restassured.RestAssured.with;
+import static org.hamcrest.Matchers.*;
 
-   @MockBean
-    private UserService userService;
 
-   @MockBean
-   private UserRepository userRepository;
+public class UserControllerTest extends AbstractControllerTest {
 
-  @MockBean
-   private NewsMapper newsMapper;
+    @Autowired
+    UserRepository userRepository;
 
     @Test
-    public void shouldCreateUser() throws Exception {
+    public void shouldCreateUser() {
 
 
-        UserDto  userRequest = createUserDto(null, "Alex", "Fadeev");
+        UserDto userRequest = UserDto.builder()
+                .id(null)
+                .firstName("Alex")
+                .lastName("Fadeev")
+                .build();
 
-           String content = objectMapper.writeValueAsString(userRequest);
+        given()
+                .contentType(ContentType.JSON)
+                .with()
+                .body(userRequest)
+                .when()
+                .post(ApiCollection.CREATE_USER)
+                .then()
+                .statusCode(200)
+                .body("firstName", hasToString("Alex"))
+                .body("lastName", hasToString("Fadeev"))
+                .body("id", is(notNullValue()));
 
-      when(userService.create(userRequest)).thenReturn(createUserDto("1", "Alex", "Fadeev"));
 
-        String actualResponse = this.mockMvc.perform(post("/users/api/create")
-               .contentType(MediaType.APPLICATION_JSON)
-               .content(content))
-               .andDo(print())
-               .andExpect(status().isOk())
-               .andReturn()
-                .getResponse()
-                .getContentAsString();
-
-        String expectedResponse = loadJsonUserDtoResponse("C:\\Users\\User\\IdeaProjects\\spring\\news-service\\src\\test\\resources\\created_user_response..txt");
-
-        verify(userService, times(1)).create(userRequest);
-
-        assertThat(actualResponse).isEqualTo(expectedResponse);
     }
 
     @Test
-    public void whenGetAllUsersReturnListUsers() throws Exception {
+    public void whenGetAllUsersReturnListUsers() {
 
-        User user1 = createUser(1L, "Alex", "Fadeev");
-        User user2 = createUser(2L, "Ivan", "Petrov");
+        userRepository.save(new User(1L, "Alex", "Fadeev"));
+        userRepository.save(new User(2L, "Ivan", "Petrov"));
 
-        List<User> userList = new ArrayList<>();
-        userList.add(user1);
-        userList.add(user2);
+        with()
+                .contentType(ContentType.JSON)
+                .when()
+                .get(ApiCollection.GET_ALL_USERS)
+                .then()
+                .statusCode(200)
+                .body(".", hasSize(2));
 
-        when(userService.findAll(PageRequest.of(0,10))).thenReturn(userList);
-
-        String actualResponse = this.mockMvc.perform(MockMvcRequestBuilders.get("/users/api/list")
-                .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk())
-                .andReturn()
-                .getResponse()
-                .getContentAsString();
-
-        String expectedResponse = loadJsonUserResponse("C:\\Users\\User\\IdeaProjects\\spring\\news-service\\src\\test\\resources\\all_users_response.txt");
-
-        verify(userService, times(1)).findAll(PageRequest.of(0,10));
-
-        assertThat(actualResponse).isEqualTo(expectedResponse);
     }
+
     @Test
-    public void whenUpdateUserReturnUser () throws Exception {
+    public void whenUpdateUserReturnUser() {
 
-        UserDto userDto = createUserDto("1", "Alex", "Fadeev");
+        User user = userRepository.findAll().get(0);
+        UserDto renewUser = UserDto.builder()
+                .id(user.getId().toString())
+                .firstName("Efim")
+                .lastName("Shefrin")
+                .build();
 
-        when(this.userService.update(userDto)).thenReturn(userDto);
-
-        String actualResponse = this.mockMvc.perform(put("/users/api/update")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(userDto)))
-                .andExpect(status().isOk())
-                .andReturn()
-                .getResponse()
-                .getContentAsString();
-
-        String expectedResponse = loadJsonUserDtoResponse("C:\\Users\\User\\IdeaProjects\\spring\\news-service\\src\\test\\resources\\created_user_response..txt");
-
-        verify(userService, times(1)).update(userDto);
-
-        assertThat(actualResponse).isEqualTo(expectedResponse);
+        given()
+                .contentType(ContentType.JSON)
+                .with()
+                .body(renewUser)
+                .put(ApiCollection.UPDATE_USER)
+                .then()
+                .statusCode(200)
+                .body("id", hasToString(user.getId().toString()))
+                .body("firstName", hasToString("Efim"))
+                .body("lastName", hasToString("Shefrin"));
     }
+
     @Test
-    public void whenDeleteUserReturnOk() throws Exception {
+    public void whenDeleteUserReturnOk() {
 
-        this.mockMvc.perform(delete("/users/api/delete/{id}", "1"))
-                .andExpect(status().isOk());
+        User user = userRepository.findAll().get(0);
 
-        verify(userService, times(1)).delete("1");
+        Long userId = user.getId();
+
+        given()
+                .contentType(ContentType.JSON)
+                .pathParam("id", userId)
+                .when()
+                .delete(ApiCollection.DELETE_USER)
+                .then()
+                .statusCode(200)
+                .body(is("User успешно удален"));
     }
+
+    @Negative
+    @Test
+    public void whenCreateUserWithEmptyFieldThenError() {
+
+        UserDto userDto = UserDto.builder()
+                .id(null)
+                .lastName("")
+                .firstName("Ivan")
+                .build();
+
+        given()
+                .contentType(ContentType.JSON)
+                .with()
+                .body(userDto)
+                .when()
+                .post(ApiCollection.CREATE_USER)
+                .then()
+                .assertThat()
+                .statusCode(200)
+                .body("message", hasToString("[Field lastName must not be blank]"));
+    }
+
+    @Negative
+    @Test
+    public void whenUpdateWithEmptyUserIdThenError() {
+
+        UserDto userDto = UserDto.builder()
+                .id("")
+                .firstName("Ivan")
+                .lastName("Petrov")
+                .build();
+
+        given()
+                .contentType(ContentType.JSON)
+                .with()
+                .body(userDto)
+                .when()
+                .put(ApiCollection.UPDATE_USER)
+                .then()
+                .assertThat()
+                .statusCode(200)
+                .body("message", hasToString("[Field id must be digit]"));
+    }
+
+    @Negative
+    @Test
+    public void whenDeleteUserIsNotDigitThenError() {
+
+        given()
+                .contentType(ContentType.JSON)
+                .pathParam("id", "s")
+                .when()
+                .delete(ApiCollection.DELETE_USER)
+                .then()
+                .statusCode(200)
+                .body("message", hasToString("Неверный формат данных"));
+    }
+
 }

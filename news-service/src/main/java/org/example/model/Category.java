@@ -12,17 +12,18 @@ import java.util.List;
 @AllArgsConstructor
 @NoArgsConstructor
 @Entity
+@Builder
 @Table(name = "categories")
 public class Category {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    long id;
+    Long id;
 
     @Column(name = "category_name")
     String categoryName;
 
-    @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
-    @JsonIgnoreProperties("category")
+    @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    //   @JsonIgnoreProperties("category")
     List<News> news = new ArrayList<>();
 
     public Category(String categoryName, ArrayList<News> news) {

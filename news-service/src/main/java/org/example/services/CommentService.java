@@ -26,51 +26,59 @@ public class CommentService {
     private final CommentRepository commentRepository;
     private final NewsRepository newsRepository;
 
+    private final NewsMapper mapper;
+
     @Transactional
-    public CommentDto create (CommentDto dto, String newsId, String userId) {
+    public CommentDto create(CommentDto dto, Long newsId, Long userId) {
 
-           News news = newsRepository.findById(Long.parseLong(newsId)).orElseThrow();
-       List<Comment> commentList = news.getComments();
-    Comment newComment = NewsMapper.INSTANCE.commentDtoToComment(dto);
-    newComment.setUserId(Long.parseLong(userId));
-    newComment.setCreatedTime(LocalDateTime.now());
-    newComment.setUpdatedTime(LocalDateTime.now());
-       commentList.add(newComment);
-           news.setComments(commentList);
-           newsRepository.save(news);
+        News news = newsRepository.findById(newsId).orElseThrow();
+        List<Comment> commentList = news.getComments();
+        Comment newComment = mapper.commentDtoToComment(dto);
+        newComment.setUserId(userId);
+        newComment.setCreatedTime(LocalDateTime.now());
+        newComment.setUpdatedTime(LocalDateTime.now());
+        commentList.add(newComment);
+        news.setComments(commentList);
+        newsRepository.save(news);
 
 
-    return NewsMapper.INSTANCE.commentToCommentDto(getLastComment(news));
+        return mapper.commentToCommentDto(getLastComment(news));
     }
 
-    public List<Comment> findAll (String newsId) {
+    public List<Comment> findAll(Long newsId) {
 
-        Optional<News> news = newsRepository.findById(Long.parseLong(newsId));
+        Optional<News> news = newsRepository.findById(newsId);
 
         return (news.isPresent()) ? news.get().getComments() : new ArrayList<>();
     }
 
 
-
-    public CommentDto approvedUpdate (CommentDto dto) {
+    public CommentDto approvedUpdate(CommentDto dto) {
 
         Comment comment = commentRepository.findById(Long.parseLong(dto.getId())).orElseThrow();
 
         comment.setUpdatedTime(LocalDateTime.now());
         comment.setText(dto.getText());
 
-        return NewsMapper.INSTANCE.commentToCommentDto(commentRepository.save(comment));
+        return mapper.commentToCommentDto(commentRepository.save(comment));
     }
 
-    public void delete (String commentId) {
+    public boolean delete(Long commentId) {
 
-        Comment comment = commentRepository.findById(Long.parseLong(commentId)).orElseThrow();
+        Comment comment = commentRepository.findById(commentId).orElseThrow();
 
-        commentRepository.delete(comment);
+        News news = newsRepository.findAll().stream().filter(x -> {
+            return x.getComments().contains(comment);
+        }).findFirst().orElseThrow();
+        List<Comment> commentList = news.getComments();
+        commentList.remove(comment);
+        news.setComments(commentList);
+        newsRepository.save(news);
 
+        return (commentRepository.findById(commentId).isEmpty());
     }
 
-    Comment getLastComment (News news) {
+    Comment getLastComment(News news) {
 
         List<Comment> commentList = newsRepository.findById(news.getId()).get().getComments();
 

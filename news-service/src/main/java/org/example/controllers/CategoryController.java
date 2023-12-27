@@ -19,7 +19,7 @@ public class CategoryController {
     private final CategoryService categoryService;
 
     @PostMapping("/create")
-    public CategoryDto createCategory(@Valid CategoryDto dto) {
+    public CategoryDto createCategory(@RequestBody @Valid CategoryDto dto) {
 
         return categoryService.create(dto);
     }
@@ -31,13 +31,13 @@ public class CategoryController {
     }
 
     @PutMapping("/update")
-    public CategoryDto updateCategory(CategoryDto dto) {
+    public CategoryDto updateCategory(@RequestBody CategoryDto dto) {
 
         return categoryService.update(dto);
     }
 
     @DeleteMapping("/delete/{id}")
-    public ResponseEntity<?> deleteCategory(@PathVariable("id") String categoryId) {
+    public ResponseEntity<?> deleteCategory(@PathVariable("id") Long categoryId) {
 
         categoryService.delete(categoryId);
 

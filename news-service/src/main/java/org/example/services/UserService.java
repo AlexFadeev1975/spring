@@ -21,12 +21,14 @@ public class UserService {
 
     private final UserRepository repository;
 
-   @Transactional
+    private final NewsMapper mapper;
+
+    @Transactional
     public UserDto create(UserDto dto) {
 
-        User user = repository.save(NewsMapper.INSTANCE.userDtoToUser(dto));
+        User user = repository.save(mapper.userDtoToUser(dto));
 
-        return NewsMapper.INSTANCE.userToUserDto(user);
+        return mapper.userToUserDto(user);
     }
 
 
@@ -35,23 +37,23 @@ public class UserService {
         return repository.findAll(pageable).getContent();
     }
 
-    public User findById (Long id) {
+    public User findById(Long id) {
 
         return repository.findById(id).orElse(null);
     }
 
-    public UserDto update (UserDto dto) {
+    public UserDto update(UserDto dto) {
 
         User user = repository.findById(Long.parseLong(dto.getId())).orElseThrow();
 
         user.setFirstName(dto.getFirstName());
         user.setLastName(dto.getLastName());
-        return NewsMapper.INSTANCE.userToUserDto(repository.save(user));
+        return mapper.userToUserDto(repository.save(user));
     }
 
-    public void delete (String userId) {
+    public void delete(Long userId) {
 
-        User user = repository.findById(Long.parseLong(userId)).orElseThrow();
+        User user = repository.findById(userId).orElseThrow();
 
         repository.delete(user);
     }

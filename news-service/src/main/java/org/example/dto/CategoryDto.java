@@ -1,18 +1,25 @@
 package org.example.dto;
 
 import jakarta.validation.constraints.NotBlank;
-import lombok.Data;
+import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.Pattern;
+import lombok.*;
 import org.example.model.News;
 
 import java.util.List;
 
-@Data
+@Setter
+@Getter
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
 public class CategoryDto {
 
-    String id;
+    @Pattern(regexp = "[0-9]+", message = "Field must be digit")
+    private String id;
 
-    @NotBlank
-    String categoryName;
+    @NotBlank(message = "Field CategoryName must not be blank")
+    private String categoryName;
 
     List<News> news;
 }

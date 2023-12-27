@@ -19,15 +19,17 @@ public class CategoryService {
 
     private final CategoryRepository categoryRepository;
 
-
+    private final NewsMapper mapper;
 
     @Transactional
-    public CategoryDto create (CategoryDto dto) {
+    public CategoryDto create(CategoryDto dto) {
 
-        return NewsMapper.INSTANCE.categoryToCategoryDto(categoryRepository.save(NewsMapper.INSTANCE.categoryDtoToCategory(dto)));
+        Category category = mapper.categoryDtoToCategory(dto);
+
+        return mapper.categoryToCategoryDto(categoryRepository.save(category));
     }
 
-    public Category findByCategoryName (String categoryName) {
+    public Category findByCategoryName(String categoryName) {
 
         Category category = categoryRepository.findByCategoryName(categoryName);
 
@@ -41,20 +43,20 @@ public class CategoryService {
         return categoryRepository.findAll(pageable).getContent();
     }
 
-    public CategoryDto update (CategoryDto dto) {
+    public CategoryDto update(CategoryDto dto) {
 
         Category category = categoryRepository.findById(Long.parseLong(dto.getId())).orElseThrow();
 
         category.setCategoryName(dto.getCategoryName());
 
-        return NewsMapper.INSTANCE.categoryToCategoryDto(categoryRepository.save(category));
+        return mapper.categoryToCategoryDto(categoryRepository.save(category));
     }
 
-    public void delete (String categoryId) {
+    public void delete(Long categoryId) {
 
-       Category category = categoryRepository.findById(Long.parseLong(categoryId)).orElseThrow();
+        Category category = categoryRepository.findById(categoryId).orElseThrow();
 
-       categoryRepository.delete(category);
+        categoryRepository.delete(category);
 
 
     }

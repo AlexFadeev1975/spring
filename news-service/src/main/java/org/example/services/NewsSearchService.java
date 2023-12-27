@@ -27,27 +27,29 @@ public class NewsSearchService {
     private final NewsFilterBuilder filterBuilder;
     private final SpecificationBuilder specificationBuilder;
 
+    private final NewsMapper mapper;
+
     private final NewsRepository newsRepository;
 
-    public List<NewsDto> searchNewsByAuthorAndCategory (NewsSearchDto dto) {
+    public List<NewsDto> searchNewsByAuthorAndCategory(NewsSearchDto dto) {
 
 
-    List<Long> authorIds = (dto.getAuthor() != null) ? getUserIdsFromAuthor(dto.getAuthor()) : new ArrayList<>();
+        List<Long> authorIds = (dto.getAuthor() != null) ? getUserIdsFromAuthor(dto.getAuthor()) : new ArrayList<>();
 
-    List<Filter> filter = filterBuilder.createFilter(dto, authorIds);
+        List<Filter> filter = filterBuilder.createFilter(dto, authorIds);
 
         if (filter.isEmpty()) {
 
-        return new ArrayList<>();
+            return new ArrayList<>();
+        }
+
+        Specification<News> specification =
+                (Specification<News>) specificationBuilder.getSpecificationFromFilters(filter);
+
+        Page<News> pageResult = newsRepository.findAll(specification, PageRequest.of(0, 10));
+
+        return mapper.toListNewsDto(pageResult.getContent());
     }
-
-    Specification<News> specification =
-            (Specification<News>) specificationBuilder.getSpecificationFromFilters(filter);
-
-    Page<News> pageResult = newsRepository.findAll(specification, PageRequest.of(0,10));
-
-        return NewsMapper.INSTANCE.toListNewsDto(pageResult.getContent());
-}
 
     private List<Long> getUserIdsFromAuthor(String author) {
 

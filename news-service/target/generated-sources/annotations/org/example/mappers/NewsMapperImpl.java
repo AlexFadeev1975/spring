@@ -16,7 +16,7 @@ import org.springframework.stereotype.Component;
 
 @Generated(
     value = "org.mapstruct.ap.MappingProcessor",
-    date = "2023-12-23T05:30:31+0300",
+    date = "2023-12-27T20:46:14+0300",
     comments = "version: 1.5.3.Final, compiler: javac, environment: Java 20.0.2.1 (Amazon.com Inc.)"
 )
 @Component
@@ -45,13 +45,15 @@ public class NewsMapperImpl implements NewsMapper {
             return null;
         }
 
-        UserDto userDto = new UserDto();
+        UserDto.UserDtoBuilder userDto = UserDto.builder();
 
-        userDto.setId( String.valueOf( user.getId() ) );
-        userDto.setFirstName( user.getFirstName() );
-        userDto.setLastName( user.getLastName() );
+        if ( user.getId() != null ) {
+            userDto.id( String.valueOf( user.getId() ) );
+        }
+        userDto.firstName( user.getFirstName() );
+        userDto.lastName( user.getLastName() );
 
-        return userDto;
+        return userDto.build();
     }
 
     @Override
@@ -60,24 +62,24 @@ public class NewsMapperImpl implements NewsMapper {
             return null;
         }
 
-        News news = new News();
+        News.NewsBuilder news = News.builder();
 
         if ( dto.getId() != null ) {
-            news.setId( Long.parseLong( dto.getId() ) );
+            news.id( Long.parseLong( dto.getId() ) );
         }
-        news.setText( dto.getText() );
+        news.text( dto.getText() );
         if ( dto.getUserId() != null ) {
-            news.setUserId( Long.parseLong( dto.getUserId() ) );
+            news.userId( Long.parseLong( dto.getUserId() ) );
         }
-        news.setCreatedTime( dto.getCreatedTime() );
-        news.setUpdatedTime( dto.getUpdatedTime() );
-        news.setCategory( dto.getCategory() );
+        news.createdTime( dto.getCreatedTime() );
+        news.updatedTime( dto.getUpdatedTime() );
+        news.category( dto.getCategory() );
         List<Comment> list = dto.getComments();
         if ( list != null ) {
-            news.setComments( new ArrayList<Comment>( list ) );
+            news.comments( new ArrayList<Comment>( list ) );
         }
 
-        return news;
+        return news.build();
     }
 
     @Override
@@ -135,20 +137,20 @@ public class NewsMapperImpl implements NewsMapper {
             return null;
         }
 
-        Comment comment = new Comment();
+        Comment.CommentBuilder comment = Comment.builder();
 
         if ( dto.getId() != null ) {
-            comment.setId( Long.parseLong( dto.getId() ) );
+            comment.id( Long.parseLong( dto.getId() ) );
         }
-        comment.setText( dto.getText() );
+        comment.text( dto.getText() );
         if ( dto.getUserId() != null ) {
-            comment.setUserId( Long.parseLong( dto.getUserId() ) );
+            comment.userId( Long.parseLong( dto.getUserId() ) );
         }
-        comment.setCreatedTime( dto.getCreatedTime() );
-        comment.setUpdatedTime( dto.getUpdatedTime() );
-        comment.setNews( dto.getNews() );
+        comment.createdTime( dto.getCreatedTime() );
+        comment.updatedTime( dto.getUpdatedTime() );
+        comment.news( dto.getNews() );
 
-        return comment;
+        return comment.build();
     }
 
     @Override
@@ -157,18 +159,20 @@ public class NewsMapperImpl implements NewsMapper {
             return null;
         }
 
-        CommentDto commentDto = new CommentDto();
+        CommentDto.CommentDtoBuilder commentDto = CommentDto.builder();
 
-        commentDto.setId( String.valueOf( comment.getId() ) );
-        commentDto.setText( comment.getText() );
-        if ( comment.getUserId() != null ) {
-            commentDto.setUserId( String.valueOf( comment.getUserId() ) );
+        if ( comment.getId() != null ) {
+            commentDto.id( String.valueOf( comment.getId() ) );
         }
-        commentDto.setCreatedTime( comment.getCreatedTime() );
-        commentDto.setUpdatedTime( comment.getUpdatedTime() );
-        commentDto.setNews( comment.getNews() );
+        commentDto.text( comment.getText() );
+        if ( comment.getUserId() != null ) {
+            commentDto.userId( String.valueOf( comment.getUserId() ) );
+        }
+        commentDto.createdTime( comment.getCreatedTime() );
+        commentDto.updatedTime( comment.getUpdatedTime() );
+        commentDto.news( comment.getNews() );
 
-        return commentDto;
+        return commentDto.build();
     }
 
     @Override
@@ -177,18 +181,18 @@ public class NewsMapperImpl implements NewsMapper {
             return null;
         }
 
-        Category category = new Category();
+        Category.CategoryBuilder category = Category.builder();
 
         if ( dto.getId() != null ) {
-            category.setId( Long.parseLong( dto.getId() ) );
+            category.id( Long.parseLong( dto.getId() ) );
         }
-        category.setCategoryName( dto.getCategoryName() );
+        category.categoryName( dto.getCategoryName() );
         List<News> list = dto.getNews();
         if ( list != null ) {
-            category.setNews( new ArrayList<News>( list ) );
+            category.news( new ArrayList<News>( list ) );
         }
 
-        return category;
+        return category.build();
     }
 
     @Override
@@ -197,15 +201,17 @@ public class NewsMapperImpl implements NewsMapper {
             return null;
         }
 
-        CategoryDto categoryDto = new CategoryDto();
+        CategoryDto.CategoryDtoBuilder categoryDto = CategoryDto.builder();
 
-        categoryDto.setId( String.valueOf( category.getId() ) );
-        categoryDto.setCategoryName( category.getCategoryName() );
+        if ( category.getId() != null ) {
+            categoryDto.id( String.valueOf( category.getId() ) );
+        }
+        categoryDto.categoryName( category.getCategoryName() );
         List<News> list = category.getNews();
         if ( list != null ) {
-            categoryDto.setNews( new ArrayList<News>( list ) );
+            categoryDto.news( new ArrayList<News>( list ) );
         }
 
-        return categoryDto;
+        return categoryDto.build();
     }
 }
