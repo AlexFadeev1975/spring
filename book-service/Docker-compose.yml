@@ -1,0 +1,32 @@
+version: '3'
+services:
+  redis:
+    image: 'redis:latest'
+    restart: always
+    volumes:
+      - 'redis:/var/lib/redis/data'
+    ports:
+      - '6379:6379'
+    expose:
+      - '6379'
+
+    networks:
+      - server
+
+  book-service:
+    image: 'book-service'
+    ports:
+      - '8080:8080'
+    expose:
+      - '8080'
+    depends_on:
+      - redis
+
+    networks:
+      - server
+networks:
+  server:
+    driver: bridge
+volumes:
+  redis:
+    driver: local
