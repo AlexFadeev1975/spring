@@ -1,6 +1,5 @@
 package org.example.configuration;
 
-import org.example.mapper.BooksMapper;
 import org.modelmapper.ModelMapper;
 import org.modelmapper.convention.MatchingStrategies;
 import org.springframework.context.annotation.Bean;
@@ -11,7 +10,7 @@ import static org.modelmapper.config.Configuration.AccessLevel.PRIVATE;
 @Configuration
 public class BookServiceConfig {
 
-    @Bean
+     @Bean
     public ModelMapper modelMapper() {
         ModelMapper mapper = new ModelMapper();
         mapper.getConfiguration()
@@ -21,9 +20,5 @@ public class BookServiceConfig {
                 .setFieldAccessLevel(PRIVATE);
         return mapper;
     }
-    @Bean
-    public BooksMapper booksMapper(ModelMapper mapper) {
 
-        return new BooksMapper(modelMapper());
-    }
 }

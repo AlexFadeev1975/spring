@@ -4,7 +4,9 @@ import lombok.RequiredArgsConstructor;
 import org.example.model.Book;
 import org.example.model.dto.BookDto;
 import org.modelmapper.ModelMapper;
+import org.springframework.stereotype.Component;
 
+@Component
 @RequiredArgsConstructor
 public class BooksMapper {
 
