@@ -1,0 +1,78 @@
+version: "3.7"
+
+
+services:
+  zookeeper:
+    image: confluentinc/cp-zookeeper:latest
+    container_name: zookeeper
+    restart: "no"
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+    networks:
+      - server
+
+  kafka:
+    image: confluentinc/cp-kafka:latest
+    container_name: kafka
+    restart: "no"
+    ports:
+      - "9092:9092"
+    networks:
+      - server
+    environment:
+      JAVA_TOOL_OPTIONS: -Xmx512m
+      KAFKA_ADVERTISED_HOST_NAME: kafka
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_ADVERTISED_LISTENERS: EXTERNAL://localhost:9092,INTERNAL://kafka:9192
+      KAFKA_LISTENERS: EXTERNAL://localhost:9092,INTERNAL://kafka:9192
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_LOG_RETENTION_HOURS: 1
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: EXTERNAL:PLAINTEXT,INTERNAL:PLAINTEXT
+      KAFKA_INTER_BROKER_LISTENER_NAME: INTERNAL
+
+
+    depends_on:
+        - zookeeper
+
+  order-service:
+    image: 'order-service'
+    ports:
+      - '8080:8080'
+    expose:
+      - '8080'
+    depends_on:
+      - kafka
+      - order-status-service
+    networks:
+      - server
+    environment:
+      BS_SERVERS: kafka:9192
+      GROUP_ID: order-service-groupID
+      MESSAGE_TOPIC: order-status-topic
+      ORDER_TOPIC: order-topic
+
+
+  order-status-service:
+    image: 'order-status-service'
+    ports:
+      - '8081:8081'
+    expose:
+      - '8081'
+    depends_on:
+      - kafka
+
+    networks:
+      - server
+    environment:
+      BS_SERVERS: kafka:9192
+      GROUP_ID: order-service-groupID
+      MESSAGE_TOPIC: order-status-topic
+      ORDER_TOPIC: order-topic
+
+networks:
+  server:
+    driver: bridge
+
+
+

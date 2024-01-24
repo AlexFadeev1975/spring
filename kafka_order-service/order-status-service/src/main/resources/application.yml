@@ -1,0 +1,9 @@
+spring:
+  kafka:
+    bootstrap-servers: ${BS_SERVERS}
+    kafkaMessageGroupId: ${GROUP_ID}
+    kafkaMessageTopic: ${MESSAGE_TOPIC}
+    kafkaOrderTopic: ${ORDER_TOPIC}
+
+server:
+  port: 8088
