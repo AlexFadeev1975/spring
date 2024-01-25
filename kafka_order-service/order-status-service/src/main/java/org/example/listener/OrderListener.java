@@ -23,7 +23,9 @@ public class OrderListener {
 
     private static String STATUS = "CREATED";
 
-    @KafkaListener(topics = "${spring.kafka.kafkaOrderTopic}", groupId = "${spring.kafka.kafkaMessageGroupId}")
+    @KafkaListener(topics = "${spring.kafka.kafkaOrderTopic}",
+                   groupId = "${spring.kafka.kafkaMessageGroupId}",
+                   containerFactory = "orderKafkaListenerContainerFactory")
     public void listener(@Payload OrderEvent order,
                          @Header(value = KafkaHeaders.RECEIVED_KEY, required = false) UUID key,
                          @Header(KafkaHeaders.RECEIVED_PARTITION) Integer partition,

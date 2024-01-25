@@ -22,11 +22,11 @@ public class OrderService {
     private String topic;
 
 
-    private final KafkaTemplate<String, Object> kafkaTemplate;
+    private final KafkaTemplate<String, OrderEvent> kafkaTemplate;
 
     @Autowired
-    public OrderService(@Qualifier("myKafka") KafkaTemplate<String, Object> kafkaTemplate) {
-        this.kafkaTemplate = kafkaTemplate;
+    public OrderService(@Qualifier("orderEvent") KafkaTemplate<String, OrderEvent> orderKafkaTemplate) {
+        this.kafkaTemplate = orderKafkaTemplate;
     }
 
     private final List<Order> orders = new ArrayList<>();

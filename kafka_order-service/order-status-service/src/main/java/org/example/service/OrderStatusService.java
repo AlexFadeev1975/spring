@@ -14,12 +14,13 @@ public class OrderStatusService {
     @Value(value = "${spring.kafka.kafkaMessageTopic}")
     private String staticTopic;
 
-    private final KafkaTemplate<String, Object> kafkaTemplate;
+
+    private final KafkaTemplate<String, StatusMessage> kafkaTemplate;
 
     @Autowired
-    public OrderStatusService(@Qualifier("myKafka") KafkaTemplate<String, Object> kafkaTemplate) {
+    public OrderStatusService(@Qualifier("statusMessage") KafkaTemplate<String, StatusMessage> messageKafkaTemplate) {
 
-        this.kafkaTemplate = kafkaTemplate;
+        this.kafkaTemplate = messageKafkaTemplate;
     }
 
 

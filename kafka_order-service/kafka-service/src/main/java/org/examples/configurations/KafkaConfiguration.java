@@ -6,15 +6,15 @@ import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.common.serialization.StringDeserializer;
 import org.apache.kafka.common.serialization.StringSerializer;
+import org.examples.model.OrderEvent;
+import org.examples.model.StatusMessage;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.kafka.annotation.EnableKafka;
 import org.springframework.kafka.config.ConcurrentKafkaListenerContainerFactory;
-import org.springframework.kafka.config.KafkaListenerContainerFactory;
 import org.springframework.kafka.core.*;
-import org.springframework.kafka.listener.ConcurrentMessageListenerContainer;
 import org.springframework.kafka.support.serializer.JsonDeserializer;
 import org.springframework.kafka.support.serializer.JsonSerializer;
 
@@ -30,8 +30,7 @@ public class KafkaConfiguration {
     @Value(value = "${spring.kafka.kafkaMessageGroupId}")
     private String kafkaMessageGroupId;
 
-    @Bean
-    public ProducerFactory<String, Object> kafkaMessageProducerFactory() {
+    public Map<String, Object> producerConfig() {
 
         Map<String, Object> config = new HashMap<>();
 
@@ -39,22 +38,33 @@ public class KafkaConfiguration {
         config.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
         config.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, JsonSerializer.class);
 
-        return new DefaultKafkaProducerFactory<>(config, new StringSerializer(), new JsonSerializer<>());
-    }
-
-    @Bean(name = "myKafka")
-    public KafkaTemplate<String, Object> kafkaTemplate() {
-
-        return new KafkaTemplate<String, Object>(kafkaMessageProducerFactory());
+        return config;
     }
 
     @Bean
-    public ConsumerFactory<String, Object> kafkaMessageConsumerFactory() {
+    public ProducerFactory<String, OrderEvent> kafkaOrderProducerFactory() {
 
-        return new DefaultKafkaConsumerFactory<>(consumerConfig(), new StringDeserializer(), new JsonDeserializer<>(objectMapper()));
+    return new DefaultKafkaProducerFactory<>(producerConfig());
     }
 
     @Bean
+    public ProducerFactory<String, StatusMessage> kafkaMessageProducerFactory() {
+
+        return new DefaultKafkaProducerFactory<>(producerConfig());
+    }
+    @Bean(name = "orderEvent")
+    public KafkaTemplate<String, OrderEvent> orderKafkaTemplate() {
+
+        return new KafkaTemplate<String, OrderEvent>(kafkaOrderProducerFactory());
+    }
+
+    @Bean(name = "statusMessage")
+    public KafkaTemplate<String, StatusMessage> messageKafkaTemplate() {
+
+        return new KafkaTemplate<String, StatusMessage>(kafkaMessageProducerFactory());
+    }
+
+   @Bean
     public ObjectMapper objectMapper() {
 
         ObjectMapper mapper = new ObjectMapper();
@@ -62,7 +72,6 @@ public class KafkaConfiguration {
 
         return mapper;
     }
-
     @Bean
     public Map<String, Object> consumerConfig() {
 
@@ -76,13 +85,32 @@ public class KafkaConfiguration {
 
         return config;
     }
-
     @Bean
-    KafkaListenerContainerFactory<ConcurrentMessageListenerContainer<String, Object>>
-    kafkaListenerContainerFactory() {
-        ConcurrentKafkaListenerContainerFactory<String, Object> factory =
+    public ConsumerFactory<String, OrderEvent> orderConsumerFactory() {
+
+        return new DefaultKafkaConsumerFactory<>(consumerConfig(), new StringDeserializer(), new JsonDeserializer<>(objectMapper()));
+    }
+    @Bean
+    public ConsumerFactory<String, StatusMessage> messageConsumerFactory() {
+
+        return new DefaultKafkaConsumerFactory<>(consumerConfig(), new StringDeserializer(), new JsonDeserializer<>(objectMapper()));
+    }
+    @Bean
+    ConcurrentKafkaListenerContainerFactory<String, OrderEvent>
+    orderKafkaListenerContainerFactory() {
+        ConcurrentKafkaListenerContainerFactory<String, OrderEvent> factory =
                 new ConcurrentKafkaListenerContainerFactory<>();
-        factory.setConsumerFactory(kafkaMessageConsumerFactory());
+        factory.setConsumerFactory(orderConsumerFactory());
+        factory.setConcurrency(3);
+        factory.getContainerProperties().setPollTimeout(3000);
+        return factory;
+    }
+    @Bean
+    ConcurrentKafkaListenerContainerFactory<String, StatusMessage>
+    messageKafkaListenerContainerFactory() {
+        ConcurrentKafkaListenerContainerFactory<String, StatusMessage> factory =
+                new ConcurrentKafkaListenerContainerFactory<>();
+        factory.setConsumerFactory(messageConsumerFactory());
         factory.setConcurrency(3);
         factory.getContainerProperties().setPollTimeout(3000);
         return factory;

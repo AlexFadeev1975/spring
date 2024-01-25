@@ -37,13 +37,13 @@ import static org.awaitility.Awaitility.await;
 @Testcontainers
 public class OrderControllerTest {
     @Autowired
-    @Qualifier("myKafka")
-    KafkaTemplate<String, Object> kafkaTemplate;
+    @Qualifier("orderEvent")
+    KafkaTemplate<String, OrderEvent> kafkaTemplate;
 
     static Network NETWORK = Network.newNetwork();
     @Container
     static final KafkaContainer kafka = new KafkaContainer(
-            DockerImageName.parse("confluentinc/cp-kafka:latest"))
+            DockerImageName.parse("confluentinc/cp-kafka:7.5.3"))
             .withExposedPorts(9092, 9192, 9093)
             .withNetwork(NETWORK)
             .withNetworkAliases("kafka");

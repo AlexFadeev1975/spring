@@ -20,7 +20,9 @@ public class StatusMessageListener {
     private final OrderService orderService;
 
 
-    @KafkaListener(topics = "${spring.kafka.kafkaMessageTopic}", groupId = "${spring.kafka.kafkaMessageGroupId}")
+    @KafkaListener(topics = "${spring.kafka.kafkaMessageTopic}",
+                   groupId = "${spring.kafka.kafkaMessageGroupId}",
+                   containerFactory = "messageKafkaListenerContainerFactory")
     public void listener(@Payload StatusMessage message,
                          @Header(value = KafkaHeaders.RECEIVED_KEY, required = false) UUID key,
                          @Header(KafkaHeaders.RECEIVED_PARTITION) Integer partition,

@@ -3,7 +3,7 @@ version: "3.7"
 
 services:
   zookeeper:
-    image: confluentinc/cp-zookeeper:latest
+    image: confluentinc/cp-zookeeper:7.5.3
     container_name: zookeeper
     restart: "no"
     environment:
@@ -13,7 +13,7 @@ services:
       - server
 
   kafka:
-    image: confluentinc/cp-kafka:latest
+    image: confluentinc/cp-kafka:7.5.3
     container_name: kafka
     restart: "no"
     ports:
