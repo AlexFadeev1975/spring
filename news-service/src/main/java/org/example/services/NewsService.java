@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.example.dto.NewsDto;
 import org.example.dto.NewsDtoComCount;
 import org.example.mappers.NewsMapper;
+import org.example.mappers.NewsMapperImpl;
 import org.example.model.News;
 import org.example.repository.NewsRepository;
 import org.springframework.data.domain.Page;

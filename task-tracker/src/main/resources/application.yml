@@ -1,0 +1,9 @@
+spring:
+  data:
+    mongodb:
+      uri: ${DB_URI}
+      database: ${DB_NAME}
+
+  jackson:
+    serialization:
+      FAIL_ON_EMPTY_BEANS: false
