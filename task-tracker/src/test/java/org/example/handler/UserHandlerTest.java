@@ -3,29 +3,30 @@ package org.example.handler;
 import io.restassured.http.ContentType;
 import org.example.model.User;
 import org.example.model.dto.UserDto;
-import org.example.repository.UserRepository;
+import org.example.model.enums.RoleType;
 import org.junit.jupiter.api.MethodOrderer;
 import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestMethodOrder;
-import org.springframework.beans.factory.annotation.Autowired;
+
+import java.util.Set;
 
 import static io.restassured.RestAssured.given;
-import static io.restassured.RestAssured.when;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.hasToString;
 
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 
 public class UserHandlerTest extends TaskTrackerTest {
-    @Autowired
-    private UserRepository userRepository;
+
 
     @Order(1)
     @Test
     public void whenCreateUserThenReturnNewUser() {
 
-        UserDto dto = new UserDto("1usr", "user 1", "email@us.ru");
+        String pass = passwordEncoder.encode("123");
+
+        UserDto dto = new UserDto("1usr", "user 1", "email@us.ru", pass, "ROLE_MANAGER", Set.of(RoleType.ROLE_MANAGER));
 
         given()
                 .contentType(ContentType.JSON)
@@ -45,7 +46,11 @@ public class UserHandlerTest extends TaskTrackerTest {
     @Order(2)
     public void whenGetAllUsersThenFindSetUsers() {
 
-        when()
+        given()
+                .contentType(ContentType.JSON)
+                .auth()
+                .basic("user 1", "123")
+                .when()
                 .get(ApiCollection.GET_USERS)
                 .then()
                 .body(".", hasSize(1));
@@ -61,6 +66,8 @@ public class UserHandlerTest extends TaskTrackerTest {
         given()
                 .contentType(ContentType.JSON)
                 .pathParam("id", user.getId())
+                .auth()
+                .basic("user 1", "123")
                 .when()
                 .get(ApiCollection.GET_USER)
                 .then()
@@ -84,6 +91,8 @@ public class UserHandlerTest extends TaskTrackerTest {
                 .contentType(ContentType.JSON)
                 .with()
                 .body(dto)
+                .auth()
+                .basic("user 1", "123")
                 .when()
                 .put(ApiCollection.UPDATE_USER)
                 .then()
@@ -102,6 +111,8 @@ public class UserHandlerTest extends TaskTrackerTest {
                 .contentType(ContentType.JSON)
                 .with()
                 .pathParam("id", user.getId())
+                .auth()
+                .basic("user 1", "123")
                 .when()
                 .delete(ApiCollection.DELETE_USER)
                 .then()

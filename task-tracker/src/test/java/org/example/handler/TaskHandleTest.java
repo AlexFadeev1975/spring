@@ -2,53 +2,50 @@ package org.example.handler;
 
 import org.example.model.dto.TaskDto;
 import org.example.model.dto.UserDto;
+import org.example.model.enums.RoleType;
 import org.example.repository.TaskRepository;
 import org.junit.jupiter.api.*;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.reactive.AutoConfigureWebTestClient;
-import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.reactive.server.WebTestClient;
 import org.springframework.web.reactive.function.BodyInserters;
 import reactor.core.publisher.Flux;
 import reactor.test.StepVerifier;
 
-@SpringBootTest
-@AutoConfigureWebTestClient
+import java.util.Set;
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
-@TestInstance(TestInstance.Lifecycle.PER_CLASS)
-public class TaskHandleTest {
+public class TaskHandleTest extends TaskTrackerTest{
 
     @Autowired
     private WebTestClient webTestClient;
-    @Autowired
+
+   @Autowired
     private TaskRepository taskRepository;
+    static UserDto userDto;
+    static UserDto userDto1;
+     static TaskDto taskDto;
 
-    private UserDto userDto;
-    private UserDto userDto1;
-    private TaskDto taskDto;
 
-    @BeforeAll
-    public void setUp() {
-
-        taskRepository.deleteAll().subscribe();
-    }
 
     @Order(0)
     @Test
     public void createTask() {
 
+       taskRepository.deleteAll().subscribe();
+
+       String pass = passwordEncoder.encode("123");
+
         Flux<UserDto> userDtoFlux = webTestClient.post()
                 .uri(ApiCollection.CREATE_USER)
                 .accept(MediaType.APPLICATION_JSON)
                 .contentType(MediaType.APPLICATION_JSON)
-                .body(BodyInserters.fromValue(new UserDto("1", "user test", "email@email.ru")))
+                .body(BodyInserters.fromValue(new UserDto("1", "user test", "email@email.ru", pass, "ROLE_MANAGER", Set.of(RoleType.ROLE_MANAGER))))
                 .exchange()
                 .expectStatus().isOk()
                 .returnResult(UserDto.class).getResponseBody()
                 .log();
         userDtoFlux.next().subscribe(user -> {
-            this.userDto = user;
+            userDto = user;
         });
 
         TaskDto dto = new TaskDto();
@@ -63,15 +60,17 @@ public class TaskHandleTest {
                 .uri(ApiCollection.CREATE_TASK)
                 .accept(MediaType.APPLICATION_JSON)
                 .contentType(MediaType.APPLICATION_JSON)
+                .headers(httpHeaders -> httpHeaders.setBasicAuth("user test", "123"))
                 .body(BodyInserters.fromValue(dto))
                 .exchange()
                 .expectStatus().isOk()
                 .returnResult(TaskDto.class).getResponseBody()
                 .log();
         taskDtoFlux.next().subscribe(task -> {
-            this.taskDto = task;
+            taskDto = task;
+            Assertions.assertNotNull(taskDto);
         });
-        Assertions.assertNotNull(taskDto);
+
     }
 
     @Order(1)
@@ -79,6 +78,7 @@ public class TaskHandleTest {
     public void getTaskById() {
         Flux<TaskDto> taskDtoFlux = webTestClient.get()
                 .uri(ApiCollection.FIND_TASK, taskDto.getId())
+                .headers(httpHeaders -> httpHeaders.setBasicAuth("user test", "123"))
                 .accept(MediaType.APPLICATION_JSON)
                 .exchange()
                 .expectStatus().isOk()
@@ -107,6 +107,7 @@ public class TaskHandleTest {
                 .uri(ApiCollection.UPDATE_TASK)
                 .accept(MediaType.APPLICATION_JSON)
                 .contentType(MediaType.APPLICATION_JSON)
+                .headers(httpHeaders -> httpHeaders.setBasicAuth("user test", "123"))
                 .body(BodyInserters.fromValue(dto))
                 .exchange()
                 .returnResult(TaskDto.class).getResponseBody()
@@ -123,6 +124,7 @@ public class TaskHandleTest {
         Flux<TaskDto> taskDtoFlux = webTestClient.get()
                 .uri(ApiCollection.GET_TASKS)
                 .accept(MediaType.APPLICATION_JSON)
+                .headers(httpHeaders -> httpHeaders.setBasicAuth("user test", "123"))
                 .exchange()
                 .returnResult(TaskDto.class).getResponseBody()
                 .log();
@@ -136,17 +138,19 @@ public class TaskHandleTest {
     @Order(2)
     public void addObserver() {
 
+
         Flux<UserDto> userDtoFlux = webTestClient.post()
                 .uri(ApiCollection.CREATE_USER)
                 .accept(MediaType.APPLICATION_JSON)
                 .contentType(MediaType.APPLICATION_JSON)
-                .body(BodyInserters.fromValue(new UserDto("2", "user 2test", "email@email.ru")))
+                .body(BodyInserters.fromValue(new UserDto("2", "user 2test", "my@email.ru","123", "ROLE_USER",  Set.of(RoleType.ROLE_USER))))
+                .headers(httpHeaders -> httpHeaders.setBasicAuth("user test", "123"))
                 .exchange()
                 .expectStatus().isOk()
                 .returnResult(UserDto.class).getResponseBody()
                 .log();
-        userDtoFlux.next().subscribe(user -> {
-            this.userDto1 = user;
+        userDtoFlux.subscribe(user -> {
+            userDto1 = user;
         });
 
         TaskDto dto = new TaskDto();
@@ -158,14 +162,15 @@ public class TaskHandleTest {
                 .accept(MediaType.APPLICATION_JSON)
                 .contentType(MediaType.APPLICATION_JSON)
                 .body(BodyInserters.fromValue(dto))
+                .headers(httpHeaders -> httpHeaders.setBasicAuth("user test", "123"))
                 .exchange()
                 .returnResult(TaskDto.class).getResponseBody()
                 .log();
+
         StepVerifier.create(taskDtoFlux)
                 .expectSubscription()
-                .expectNextMatches(task -> {
-                    return task.getObservers().size() == 2;
-                })
+                .expectNextMatches(task ->
+                    task.getObservers().size() == 2)
                 .verifyComplete();
     }
 

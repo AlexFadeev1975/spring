@@ -1,7 +1,11 @@
 package org.example.model;
 
 import jakarta.persistence.*;
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+import org.example.model.enums.RoleType;
 
 
 @Getter
@@ -21,9 +25,16 @@ public class User {
     @Column(name = "last_name")
     String lastName;
 
-    public User(String firstName, String lastName) {
+    String email;
 
+    String password;
+    @Enumerated(EnumType.STRING)
+    RoleType role;
+
+    public User(Long id, String firstName, String lastName) {
+        this.id = id;
         this.firstName = firstName;
         this.lastName = lastName;
     }
 }
+

@@ -16,7 +16,7 @@ import org.springframework.stereotype.Component;
 
 @Generated(
     value = "org.mapstruct.ap.MappingProcessor",
-    date = "2024-01-11T15:51:21+0300",
+    date = "2024-02-29T16:44:37+0300",
     comments = "version: 1.5.3.Final, compiler: javac, environment: Java 19 (Oracle Corporation)"
 )
 @Component
@@ -30,11 +30,14 @@ public class NewsMapperImpl implements NewsMapper {
 
         User user = new User();
 
+        user.setRole( toUserRole( dto.getRole() ) );
         if ( dto.getId() != null ) {
             user.setId( Long.parseLong( dto.getId() ) );
         }
         user.setFirstName( dto.getFirstName() );
         user.setLastName( dto.getLastName() );
+        user.setEmail( dto.getEmail() );
+        user.setPassword( dto.getPassword() );
 
         return user;
     }
@@ -52,6 +55,11 @@ public class NewsMapperImpl implements NewsMapper {
         }
         userDto.firstName( user.getFirstName() );
         userDto.lastName( user.getLastName() );
+        userDto.email( user.getEmail() );
+        userDto.password( user.getPassword() );
+        if ( user.getRole() != null ) {
+            userDto.role( user.getRole().name() );
+        }
 
         return userDto.build();
     }

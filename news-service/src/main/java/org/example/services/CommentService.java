@@ -1,17 +1,24 @@
 package org.example.services;
 
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.example.dto.CommentDto;
+import org.example.dto.NewsDto;
 import org.example.mappers.NewsMapper;
 import org.example.model.Comment;
 import org.example.model.News;
+import org.example.model.User;
 import org.example.repository.CommentRepository;
 import org.example.repository.NewsRepository;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.example.repository.UserRepository;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.context.request.RequestAttributes;
+import org.springframework.web.context.request.RequestContextHolder;
+import org.springframework.web.context.request.ServletRequestAttributes;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -25,16 +32,18 @@ public class CommentService {
 
     private final CommentRepository commentRepository;
     private final NewsRepository newsRepository;
+    private final UserRepository userRepository;
 
     private final NewsMapper mapper;
 
     @Transactional
-    public CommentDto create(CommentDto dto, Long newsId, Long userId) {
+    @PreAuthorize("isAuthorized()")
+    public CommentDto create(CommentDto dto, Long newsId) {
 
         News news = newsRepository.findById(newsId).orElseThrow();
         List<Comment> commentList = news.getComments();
         Comment newComment = mapper.commentDtoToComment(dto);
-        newComment.setUserId(userId);
+        newComment.setUserId(getUserIdFromPrincipal());
         newComment.setCreatedTime(LocalDateTime.now());
         newComment.setUpdatedTime(LocalDateTime.now());
         commentList.add(newComment);
@@ -45,6 +54,7 @@ public class CommentService {
         return mapper.commentToCommentDto(getLastComment(news));
     }
 
+    @PreAuthorize("isAuthorized()")
     public List<Comment> findAll(Long newsId) {
 
         Optional<News> news = newsRepository.findById(newsId);
@@ -52,8 +62,8 @@ public class CommentService {
         return (news.isPresent()) ? news.get().getComments() : new ArrayList<>();
     }
 
-
-    public CommentDto approvedUpdate(CommentDto dto) {
+    @PreAuthorize("authentication.principal.id == #userId")
+    public CommentDto approvedUpdate(CommentDto dto, Long userId) {
 
         Comment comment = commentRepository.findById(Long.parseLong(dto.getId())).orElseThrow();
 
@@ -63,7 +73,8 @@ public class CommentService {
         return mapper.commentToCommentDto(commentRepository.save(comment));
     }
 
-    public boolean delete(Long commentId) {
+    @PreAuthorize("authentication.principal.id == #userId || hasRole('ROLE_MODERATOR')")
+    public boolean delete(Long commentId, Long userId) {
 
         Comment comment = commentRepository.findById(commentId).orElseThrow();
 
@@ -84,5 +95,23 @@ public class CommentService {
 
         return commentList.stream().max(Comparator.comparing(Comment::getCreatedTime)).get();
 
+    }
+
+    private Long getUserIdFromPrincipal() {
+        RequestAttributes requestAttributes = RequestContextHolder.getRequestAttributes();
+        assert requestAttributes != null;
+        HttpServletRequest request = ((ServletRequestAttributes) requestAttributes).getRequest();
+        var authentication = (Authentication) request.getUserPrincipal();
+        var userDetails = (UserDetails) authentication.getPrincipal();
+        User user = userRepository.findByEmail(userDetails.getUsername()).orElseThrow();
+        return user.getId();
+
+    }
+
+    public Long getUserIdFromComment(String id) {
+
+        Comment comment = commentRepository.findById(Long.valueOf(id)).orElseThrow();
+
+        return comment.getUserId();
     }
 }

@@ -4,12 +4,17 @@ import lombok.RequiredArgsConstructor;
 import org.example.mapper.UserMapper;
 import org.example.model.User;
 import org.example.model.dto.UserDto;
+import org.example.model.enums.RoleType;
 import org.example.repository.UserRepository;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+
+import java.util.HashSet;
+import java.util.Set;
 
 @Service
 @RequiredArgsConstructor
@@ -19,10 +24,17 @@ public class UserServiceImpl implements UserService {
 
     private final UserMapper userMapper;
 
+    private final PasswordEncoder passwordEncoder;
+
     @Override
     public Mono<UserDto> createUser(UserDto dto) {
 
         User user = userMapper.toUser(dto);
+       // user.setPassword(passwordEncoder.encode(dto.getPassword()));
+        Set<RoleType> authorities = new HashSet<>();
+                if (!dto.getRole().isEmpty()) {
+        authorities.add(RoleType.valueOf(dto.getRole().toUpperCase())); }
+        user.setRoles(authorities);
         return Mono.just(dto)
                 .flatMap(usr -> userRepository.findByUsername(usr.getUsername())
                         .hasElement()
@@ -60,6 +72,13 @@ public class UserServiceImpl implements UserService {
     public Mono<Void> deleteUserById(String id) {
 
         return userRepository.deleteById(id)
+                .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found")));
+
+    }
+
+    @Override
+    public Mono<User> findUserFromUsername(String username) {
+        return userRepository.findByUsername(username)
                 .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found")));
 
     }

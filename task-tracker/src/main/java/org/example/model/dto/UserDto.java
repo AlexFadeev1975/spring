@@ -3,7 +3,10 @@ package org.example.model.dto;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.example.model.enums.RoleType;
 import org.springframework.data.mongodb.core.mapping.Document;
+
+import java.util.Set;
 
 @Data
 @Document
@@ -16,4 +19,12 @@ public class UserDto {
     private String username;
 
     private String email;
+
+    private String password;
+
+    private String role;
+
+    private Set<RoleType> roles;
+
+
 }

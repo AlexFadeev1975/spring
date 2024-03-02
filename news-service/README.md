@@ -11,7 +11,7 @@ ${DB_PASSWORD} - password
 -
      Соберите проект в Maven package;
      Запустите в терминале билдер командой:
-     docker-compose build
+     docker build -t news-service .
 
      Запустите контейнер командой:
      docker-compose up

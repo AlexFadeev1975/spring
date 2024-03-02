@@ -1,12 +1,11 @@
 package org.example.dto;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
-import jakarta.persistence.Column;
-import jakarta.persistence.JoinColumn;
-import jakarta.validation.constraints.Digits;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
 import lombok.*;
+import org.example.model.enums.RoleType;
+
+import java.util.Set;
 
 @Getter
 @Setter
@@ -22,8 +21,14 @@ public class UserDto {
     String firstName;
 
     @NotBlank(message = "Field lastName must not be blank")
-
     String lastName;
+
+    String email;
+
+    String password;
+
+    String role;
+
 
     public UserDto(String firstName, String lastName) {
 

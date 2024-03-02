@@ -7,6 +7,7 @@ import org.example.model.Category;
 import org.example.model.News;
 import org.example.repository.CategoryRepository;
 import org.springframework.data.domain.Pageable;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -22,6 +23,7 @@ public class CategoryService {
     private final NewsMapper mapper;
 
     @Transactional
+    @PreAuthorize("hasRole('ROLE_MODERATOR')")
     public CategoryDto create(CategoryDto dto) {
 
         Category category = mapper.categoryDtoToCategory(dto);
@@ -29,20 +31,13 @@ public class CategoryService {
         return mapper.categoryToCategoryDto(categoryRepository.save(category));
     }
 
-    public Category findByCategoryName(String categoryName) {
-
-        Category category = categoryRepository.findByCategoryName(categoryName);
-
-        return (category == null)
-                ? categoryRepository.save(new Category(categoryName, new ArrayList<News>()))
-                : category;
-    }
-
+    @PreAuthorize("hasRole('ROLE_USER')")
     public List<Category> findAll(Pageable pageable) {
 
         return categoryRepository.findAll(pageable).getContent();
     }
 
+    @PreAuthorize("hasRole('ROLE_MODERATOR')")
     public CategoryDto update(CategoryDto dto) {
 
         Category category = categoryRepository.findById(Long.parseLong(dto.getId())).orElseThrow();
@@ -52,13 +47,28 @@ public class CategoryService {
         return mapper.categoryToCategoryDto(categoryRepository.save(category));
     }
 
+    @PreAuthorize("hasRole('ROLE_MODERATOR')")
     public void delete(Long categoryId) {
 
         Category category = categoryRepository.findById(categoryId).orElseThrow();
 
         categoryRepository.delete(category);
+    }
 
+    @PreAuthorize("hasRole('ROLE_USER')")
+    public CategoryDto findById(Long categoryId) {
 
+        Category category = categoryRepository.findById(categoryId).orElseThrow();
+        return mapper.categoryToCategoryDto(category);
+    }
+
+    public Category findByCategoryName(String categoryName) {
+
+        Category category = categoryRepository.findByCategoryName(categoryName);
+
+        return (category == null)
+                ? categoryRepository.save(new Category(categoryName, new ArrayList<News>()))
+                : category;
     }
 
 

@@ -30,6 +30,12 @@ public class CategoryController {
         return categoryService.findAll(PageRequest.of(0, 10));
     }
 
+    @GetMapping("/find/{id}")
+    public CategoryDto getCategoryById(@PathVariable("id") String id) {
+
+        return categoryService.findById(Long.parseLong(id));
+    }
+
     @PutMapping("/update")
     public CategoryDto updateCategory(@RequestBody CategoryDto dto) {
 

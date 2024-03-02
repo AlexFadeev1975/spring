@@ -4,29 +4,42 @@ import io.restassured.http.ContentType;
 import jakarta.validation.constraints.Negative;
 import org.example.dto.UserDto;
 import org.example.model.User;
+import org.example.model.enums.RoleType;
 import org.example.repository.UserRepository;
+import org.junit.jupiter.api.MethodOrderer;
+import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestMethodOrder;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
 
 import static io.restassured.RestAssured.given;
 import static io.restassured.RestAssured.with;
 import static org.hamcrest.Matchers.*;
 
-
+@TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 public class UserControllerTest extends AbstractControllerTest {
 
     @Autowired
     UserRepository userRepository;
 
+    @Autowired
+    BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder(12);
+
     @Test
+    @Order(1)
     public void shouldCreateUser() {
 
+        String pass = passwordEncoder.encode("123");
 
         UserDto userRequest = UserDto.builder()
                 .id(null)
                 .firstName("Alex")
                 .lastName("Fadeev")
+                .email("email@email.ru")
+                .password(pass)
+                .role("ROLE_ADMIN")
                 .build();
 
         given()
@@ -45,22 +58,25 @@ public class UserControllerTest extends AbstractControllerTest {
     }
 
     @Test
+    @Order(2)
     public void whenGetAllUsersReturnListUsers() {
 
-        userRepository.save(new User(1L, "Alex", "Fadeev"));
-        userRepository.save(new User(2L, "Ivan", "Petrov"));
 
-        with()
+       userRepository.save(new User(2L, "Ivan", "Petrov","my@email.ru", "123", RoleType.ROLE_USER));
+
+        given()
                 .contentType(ContentType.JSON)
-                .when()
+                .auth()
+                .basic("email@email.ru","123" )
                 .get(ApiCollection.GET_ALL_USERS)
                 .then()
-                .statusCode(200)
+                 .statusCode(200)
                 .body(".", hasSize(2));
 
     }
 
     @Test
+    @Order(3)
     public void whenUpdateUserReturnUser() {
 
         User user = userRepository.findAll().get(0);
@@ -72,6 +88,8 @@ public class UserControllerTest extends AbstractControllerTest {
 
         given()
                 .contentType(ContentType.JSON)
+                .auth()
+                .basic("email@email.ru","123" )
                 .with()
                 .body(renewUser)
                 .put(ApiCollection.UPDATE_USER)
@@ -83,6 +101,7 @@ public class UserControllerTest extends AbstractControllerTest {
     }
 
     @Test
+    @Order(4)
     public void whenDeleteUserReturnOk() {
 
         User user = userRepository.findAll().get(0);
@@ -92,6 +111,8 @@ public class UserControllerTest extends AbstractControllerTest {
         given()
                 .contentType(ContentType.JSON)
                 .pathParam("id", userId)
+                .auth()
+                .basic("email@email.ru","123" )
                 .when()
                 .delete(ApiCollection.DELETE_USER)
                 .then()
@@ -101,6 +122,7 @@ public class UserControllerTest extends AbstractControllerTest {
 
     @Negative
     @Test
+    @Order(5)
     public void whenCreateUserWithEmptyFieldThenError() {
 
         UserDto userDto = UserDto.builder()
@@ -111,6 +133,8 @@ public class UserControllerTest extends AbstractControllerTest {
 
         given()
                 .contentType(ContentType.JSON)
+                .auth()
+                .basic("email@email.ru","123" )
                 .with()
                 .body(userDto)
                 .when()
@@ -123,6 +147,7 @@ public class UserControllerTest extends AbstractControllerTest {
 
     @Negative
     @Test
+    @Order(6)
     public void whenUpdateWithEmptyUserIdThenError() {
 
         UserDto userDto = UserDto.builder()
@@ -133,6 +158,8 @@ public class UserControllerTest extends AbstractControllerTest {
 
         given()
                 .contentType(ContentType.JSON)
+                .auth()
+                .basic("email@email.ru","123" )
                 .with()
                 .body(userDto)
                 .when()
@@ -145,11 +172,14 @@ public class UserControllerTest extends AbstractControllerTest {
 
     @Negative
     @Test
+    @Order(7)
     public void whenDeleteUserIsNotDigitThenError() {
 
         given()
                 .contentType(ContentType.JSON)
                 .pathParam("id", "s")
+                .auth()
+                .basic("email@email.ru","123" )
                 .when()
                 .delete(ApiCollection.DELETE_USER)
                 .then()

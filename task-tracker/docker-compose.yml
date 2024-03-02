@@ -31,19 +31,19 @@ services:
       - mongodb
     networks:
       - internal-network
-  task-tracker:
-    image: 'task-tracker'
-    ports:
-      - '8080:8080'
-    expose:
-      - '8080'
-    depends_on:
-      - mongodb
-    networks:
-      - internal-network
-    environment:
-      DB_URI: mongodb://root:root@mongodb:27017/mydb?authSource=admin
-      DB_NAME: mydb
+#  task-tracker:
+#    image: 'task-tracker'
+#    ports:
+#      - '8080:8080'
+#    expose:
+#      - '8080'
+#    depends_on:
+#      - mongodb
+#    networks:
+#      - internal-network
+#    environment:
+#      DB_URI: mongodb://root:root@mongodb:27017/mydb?authSource=admin
+#      DB_NAME: mydb
 
 networks:
   internal-network:
