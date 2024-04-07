@@ -25,8 +25,8 @@ public class BookingFilterBuilder {
                     .date(currentDate).build());
         }
 
-        if (roomId != null) {
-            filterList.add(Filter.builder().field("user").operator(QueryOperator.EQUALS_USER).value(roomId.toString()).build());
+        if (userId != null) {
+            filterList.add(Filter.builder().field("user").operator(QueryOperator.EQUALS_USER).value(userId.toString()).build());
         }
 
         return filterList;

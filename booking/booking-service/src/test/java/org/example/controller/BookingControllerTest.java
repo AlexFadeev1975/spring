@@ -1,7 +1,9 @@
 package org.example.controller;
 
 import io.restassured.http.ContentType;
+import io.restassured.parsing.Parser;
 import org.example.dto.BookingDtoRequest;
+import org.example.dto.BookingDtoResponse;
 import org.example.dto.HotelDtoRequest;
 import org.example.model.City;
 import org.example.model.Room;
@@ -20,6 +22,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import java.time.LocalDate;
 
 import static io.restassured.RestAssured.given;
+import static org.example.controller.ApiCollection.GET_ALL_BOOKING_BY_USER;
 import static org.hamcrest.Matchers.*;
 import static org.hamcrest.Matchers.hasToString;
 
@@ -30,15 +33,16 @@ public class BookingControllerTest extends AbstractBookingServiceTest {
 
     @Autowired
     RoomRepository roomRepository;
-@Autowired
+    @Autowired
     UserRepository userRepository;
-@Autowired
- PasswordEncoder passwordEncoder;
+    @Autowired
+    PasswordEncoder passwordEncoder;
+
     @Test
     @Order(1)
     public void shouldCreateBooking() {
 
-        User user = userRepository.save(new User(2L, "Ivan", passwordEncoder.encode("123"),"my@email.ru", RoleType.ROLE_ADMIN));
+        User user = userRepository.save(new User(2L, "Ivan", passwordEncoder.encode("123"), "my@email.ru", RoleType.ROLE_ADMIN));
 
         Room room = Room.builder()
                 .roomName("Стандарт")
@@ -60,17 +64,37 @@ public class BookingControllerTest extends AbstractBookingServiceTest {
         given()
                 .auth()
                 .basic("Ivan", "123")
+                .log()
+                .all()
                 .contentType(ContentType.JSON)
                 .with()
                 .body(dto)
                 .when()
                 .post(ApiCollection.CREATE_BOOKING)
                 .then()
+                .using()
+                .defaultParser(Parser.JSON)
                 .statusCode(200)
                 .body("id", is(notNullValue()))
                 .body("arrivalDate", hasToString("2024-03-01"))
                 .body("leavingDate", hasToString("2024-03-05"));
 
+    }
+
+    @Test
+    @Order(2)
+    public void whenGetBookingByUserThenList() {
+
+        given()
+                .log()
+                .all()
+                .auth()
+                .basic("Ivan", "123")
+                .contentType(ContentType.JSON)
+                .get(GET_ALL_BOOKING_BY_USER)
+                .then()
+                .statusCode(200)
+                .body(".", hasSize(1));
     }
 
 

@@ -28,4 +28,10 @@ public class User {
 
     @Enumerated(EnumType.STRING)
     RoleType role;
+
+    public String toString () {
+
+        return "id " + id.toString() + " userName " + userName + " password " +
+                password + " email " + email + " role " + role.toString();
+    }
 }

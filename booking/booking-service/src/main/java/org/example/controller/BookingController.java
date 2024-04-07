@@ -39,7 +39,7 @@ public class BookingController {
     @GetMapping("/v1/list")
     public List<BookingDtoResponse> getAllBooking () {
 
-        return bookingService.finaAllBooking();
+        return bookingService.findAllBooking();
     }
 
 }
