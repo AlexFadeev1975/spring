@@ -1,0 +1,15 @@
+spring:
+  data:
+    mongodb:
+      uri: mongodb://root:root@localhost:27017/mydb?authSource=admin
+      database: mydb
+
+  kafka:
+    bootstrap-servers: localhost:9092
+    kafkaMessageGroupId: BOOKING_GROUP
+    kafkaRegMessageTopic: REG_TOPIC
+    kafkaBookingMessageTopic: BOOKING_TOPIC
+
+  jackson:
+    serialization:
+      FAIL_ON_EMPTY_BEANS: false

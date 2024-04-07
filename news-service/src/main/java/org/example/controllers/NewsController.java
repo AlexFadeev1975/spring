@@ -29,6 +29,7 @@ public class NewsController {
         return newsService.create(dto);
     }
 
+
     @GetMapping("/list")
     public List<NewsDtoComCount> findAllNews() {
 
