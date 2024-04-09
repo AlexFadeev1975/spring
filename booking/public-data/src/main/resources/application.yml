@@ -1,6 +1,0 @@
-spring:
-  kafka:
-    bootstrap-servers: localhost:9092
-    kafkaMessageGroupId: BOOKING_GROUP
-    kafkaRegMessageTopic: REG_TOPIC
-    kafkaBookingMessageTopic: BOOKING_TOPIC
