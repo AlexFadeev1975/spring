@@ -1,0 +1,108 @@
+version: '3'
+services:
+  pgsql:
+    image: 'postgres:12.18'
+    volumes:
+      - 'pgsql:/var/lib/postgresql/data'
+    ports:
+      - '5432:5432'
+    expose:
+      - '5432'
+    environment:
+      POSTGRES_DB: postgres
+      POSTGRES_USER: User
+      POSTGRES_PASSWORD: 123
+      TZ: Europe/Moscow
+    networks:
+      - server
+
+  mongodb:
+    image: mongo:7.0.5
+    ports:
+      - 27017:27017
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=root
+      - MONGO_INITDB_ROOT_PASSWORD=root
+      - MONGO_INITDB_DATABASE=mydb
+    volumes:
+      - type: bind
+        source: ./data
+        target: /data/db
+
+    networks:
+      - internal-network
+
+  mongo-express:
+    image: mongo-express
+    environment:
+      ME_CONFIG_MONGODB_SERVER: mongodb
+      ME_CONFIG_MONGODB_ADMINUSERNAME: root
+      ME_CONFIG_MONGODB_ADMINPASSWORD: root
+      ME_CONFIG_BASICAUTH_USERNAME: root
+      ME_CONFIG_BASICAUTH_PASSWORD: root
+    ports:
+      - "8081:8081"
+    depends_on:
+      - mongodb
+    networks:
+      - internal-network
+  zookeeper:
+    image: confluentinc/cp-zookeeper:7.5.3
+    container_name: zookeeper
+    restart: "no"
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+    networks:
+      - server
+
+  kafka:
+    image: confluentinc/cp-kafka:7.5.3
+    container_name: kafka
+    restart: "no"
+    ports:
+      - "9092:9092"
+    networks:
+      - server
+    environment:
+      JAVA_TOOL_OPTIONS: -Xmx512m
+      KAFKA_ADVERTISED_HOST_NAME: 127.0.0.1
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_ADVERTISED_LISTENERS: EXTERNAL://localhost:9092,INTERNAL://kafka:9192
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_LOG_RETENTION_HOURS: 1
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: EXTERNAL:PLAINTEXT,INTERNAL:PLAINTEXT
+      KAFKA_INTER_BROKER_LISTENER_NAME: INTERNAL
+
+
+    depends_on:
+      - zookeeper
+
+  booking:
+    image: 'news-service'
+    ports:
+      - '8080:8080'
+    expose:
+      - '8080'
+    environment:
+      DB_HOST: pgsql
+      DB_PORT: 5432
+      DB_NAME: User
+      DB_PASSWORD: 123
+      DB_USER: User
+
+    depends_on:
+      - pgsql
+
+    networks:
+      - server
+networks:
+  server:
+    driver: bridge
+
+  internal-network:
+    driver: bridge
+
+volumes:
+  pgsql:
+    driver: local

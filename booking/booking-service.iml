@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<module version="4">
+  <component name="AdditionalModuleElements">
+    <content url="file://$MODULE_DIR$/../booking-service">
+      <sourceFolder url="file://$MODULE_DIR$/../booking-service/src/main/java" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/../booking-service/src/main/resources" type="java-resource" />
+      <sourceFolder url="file://$MODULE_DIR$/../booking-service/src/test/java" isTestSource="true" />
+      <sourceFolder url="file://$MODULE_DIR$/../booking-service/target/generated-sources/annotations" isTestSource="false" />
+      <excludeFolder url="file://$MODULE_DIR$/../booking-service/target" />
+    </content>
+  </component>
+</module>
